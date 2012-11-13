@@ -1,0 +1,6 @@
+{
+    "name": "dcputoolbot",
+    "version": "0.1.1beta",
+    "dependencies": {"request": "*"},
+    "scripts": {"start": "node dcpubot.js"}
+}
