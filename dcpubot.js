@@ -20,11 +20,11 @@ var client = net.connect({host: config.host, port: config.port},
 
 function assemble(code, callback) {
     code = code.replace(/\//g, '\n');
-    console.log(code);
+    console.log("Calling api with: " + code);
     request({
                 uri: 'http://services.dcputoolcha.in/assemble',
                 form: {file: code},
-                method:' POST' 
+                method: 'POST' 
             }, callback);
 }
 
@@ -48,6 +48,7 @@ client.on('data', function(data) {
     } else if((matches = message.match(/^:(.*)!.*PRIVMSG (#?[^ ]+) :>>>(.*)/))) {
         assemble(matches[3], function(error, response, body) {
             hex = [];
+            console.log("Response from api: " + body);
             result = JSON.parse(body).bytes;
 	    for(var i = 0; i < result.length; i++) {
                 hex.push(' 0x' + result[i].toString(16));
