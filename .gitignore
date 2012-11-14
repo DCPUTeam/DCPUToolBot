@@ -162,6 +162,4 @@ pip-log.txt
 # Mac crap
 .DS_Store
 
-#Node
-node_modules
-config.js
+config.py
