@@ -18,6 +18,9 @@ def send(msg):
     server.send(msg + "\r\n")
 
 def privmsg(nick, chan, msg):
+    parent.last_nick = nick
+    parent.last_chan = chan
+
     response = "PRIVMSG "
 
     if chan == config.nick:
