@@ -1,13 +1,16 @@
 import re
+import assembler
 
-server = None
-config = None
-
-def init(serv, conf):
+def init(serv, conf, par):
+    print "IRC is initializing..."
     global server
     global config
+    global parent
+    global assembler
     server = serv
     config = conf
+    parent = par
+    assembler = reload(assembler)
 
 
 def send(msg):
@@ -25,18 +28,28 @@ def privmsg(nick, chan, msg):
     send(response)
 
 def onMsgToMe(nick, chan, msg):
-    privmsg(nick, chan, msg)
-    if msg == "reload":
-        return 'reload'
+    if re.match("reload.*", msg):
+        privmsg(nick, chan, "Reloading in progress")
+	parent.reload_now = True
+    if re.match("hello.*", msg):
+        privmsg(nick, chan, "Hey to you too!")
 
+assemble_re = re.compile(">>>(.+)")
 
 def onPrivMsg(nick, chan, msg):
     print "Message from " + nick + " to " + chan + ": " + msg
     to_me_match = re.match("^" + config.nick + "[^ ]? (.+)", msg)
+    assemble_match = assemble_re.match(msg)
 
-    if to_me_match or chan == config.nick:
+    if assemble_match:
+        assembled = assembler.assemble(assemble_match.group(1))
+	if assembled[1] != "":
+            privmsg(nick, chan, assembled[1])
+	else:
+	    privmsg(nick, chan, ', '.join(assembled[0]))
+    elif to_me_match or chan == config.nick:
         if to_me_match: msg = to_me_match.group(1)
-        return onMsgToMe(nick, chan, msg)
+        onMsgToMe(nick, chan, msg)
 
 ping_re = re.compile("^PING :(.*)")
 privmsg_re = re.compile("^:([^!@]+).+PRIVMSG ([^ ]+) :(.*)")
@@ -51,4 +64,4 @@ def onData(data):
         response = "PONG :" + ping_match.group(1)
         send(response)
     elif privmsg_match:
-        return onPrivMsg(privmsg_match.group(1), privmsg_match.group(2), privmsg_match.group(3))
+        onPrivMsg(privmsg_match.group(1), privmsg_match.group(2), privmsg_match.group(3))
