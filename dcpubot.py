@@ -28,8 +28,8 @@ last_nick = ""
 last_chan = ""
 
 def gitupdate():
-    irc_privmsg(last_nick, last_chan, "Pulling latest changes from GitHub")
-    proc = subprocess.Popen(['git', 'pull'], subprocess.stdout=PIPE)
+    irc.privmsg(last_nick, last_chan, "Pulling latest changes from GitHub")
+    proc = subprocess.Popen(['git', 'pull'], stdout=subprocess.PIPE)
     code = proc.wait()
     if code == 0:
         proc_msg = proc.stdout.read()
