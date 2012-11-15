@@ -36,7 +36,7 @@ def onMsgToMe(nick, chan, msg):
 	parent.reload_now = True
     if re.match("hello.*", msg):
         privmsg(nick, chan, "Howdy!")
-    if re.match("(how.*you|sup|what*up)", msg):
+    if re.match("(how.*you|sup|what*up)", msg, re.IGNORECASE):
         privmsg(nick, chan, "I'm fine. How about you?")
 
 assemble_re = re.compile(">>>(.+)")
