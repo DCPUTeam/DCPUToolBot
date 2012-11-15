@@ -2,6 +2,7 @@ import socket
 import config
 import irc
 import sys
+import subprocess
 
 server = socket.create_connection((config.host, config.port))
 
@@ -25,6 +26,16 @@ reload_now = False
 last_nick = ""
 last_chan = ""
 
+def gitupdate():
+    irc_privmsg(last_nick, last_chan, "Pulling latest changes from GitHub")
+    proc = subprocess.Popen(['git', 'pull'], subprocess.stdout=PIPE)
+    code = proc.wait()
+    if code == 0:
+        proc_msg = proc.stdout.read()
+        if "Already up-to-date." in proc_msg:
+            return False
+        return True
+
 while 1:
     try:
         message = server.recv(4096)
@@ -36,6 +47,11 @@ while 1:
     except Exception as e:
       irc.privmsg(last_nick, last_chan, "Now look at that. An error just happened. How cute. Error: " + e.message)
     if reload_now:
-      irc_load()
-      irc.privmsg(last_nick, last_chan, "Reloading finished")
-      reload_now = False
+       irc.privmsg(last_nick, last_chan, "Pulling latest changes from GitHub")
+       if gitupdate():
+           irc.privmsg(last_nick, last_chan, "Repository updated")
+       else:
+           irc.privmsg(last_nick, last_chan, "Already up to date")
+       irc_load()
+       irc.privmsg(last_nick, last_chan, "Reloading finished")
+       reload_now = False
