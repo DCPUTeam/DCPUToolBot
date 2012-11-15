@@ -48,10 +48,10 @@ def onPrivMsg(nick, chan, msg):
 
     if assemble_match:
         assembled = assembler.assemble(assemble_match.group(1))
+	if assembled[0] != "":
+	    privmsg(nick, chan, ', '.join(assembled[0]))
 	if assembled[1] != "":
             privmsg(nick, chan, assembled[1])
-	else:
-	    privmsg(nick, chan, ', '.join(assembled[0]))
     elif to_me_match or chan == config.nick:
         if to_me_match: msg = to_me_match.group(1)
         onMsgToMe(nick, chan, msg)
