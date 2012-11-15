@@ -35,7 +35,9 @@ def onMsgToMe(nick, chan, msg):
         privmsg(nick, chan, "Reloading in progress")
 	parent.reload_now = True
     if re.match("hello.*", msg):
-        privmsg(nick, chan, "Hey to you too!")
+        privmsg(nick, chan, "Howdy!")
+    if re.match("(how.*you|sup|what*up)", msg):
+        privmsg(nick, chan, "I'm fine. How about you?")
 
 assemble_re = re.compile(">>>(.+)")
 
