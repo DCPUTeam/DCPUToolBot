@@ -21,14 +21,20 @@ def privmsg(nick, chan, msg):
     parent.last_nick = nick
     parent.last_chan = chan
 
-    response = "PRIVMSG "
-
-    if chan == config.nick:
-        response += nick + " :" + msg
+    lines = msg.split("\n")
+    if(len(lines) > 1):
+        for line in lines:
+           if line != "":
+             privmsg(nick, chan, line)
     else:
-        response += chan + " :" + nick + ": " + msg
+        response = "PRIVMSG "
 
-    send(response)
+        if chan == config.nick:
+            response += nick + " :" + msg
+        else:
+            response += chan + " :" + nick + ": " + msg
+
+        send(response)
 
 def onMsgToMe(nick, chan, msg):
     if re.match("reload.*", msg):
@@ -39,12 +45,14 @@ def onMsgToMe(nick, chan, msg):
     if re.match("(how.*you|sup|what*up)", msg, re.IGNORECASE):
         privmsg(nick, chan, "I'm fine. How about you?")
 
+execute_re = re.compile(">>(.+)")
 assemble_re = re.compile(">>>(.+)")
 
 def onPrivMsg(nick, chan, msg):
     print "Message from " + nick + " to " + chan + ": " + msg
     to_me_match = re.match("^" + config.nick + "[^ ]? (.+)", msg)
     assemble_match = assemble_re.match(msg)
+    execute_match = execute_re.match(msg)
 
     if assemble_match:
         assembled = assembler.assemble(assemble_match.group(1))
@@ -52,6 +60,9 @@ def onPrivMsg(nick, chan, msg):
 	    privmsg(nick, chan, ', '.join(assembled[0]))
 	if assembled[1] != "":
             privmsg(nick, chan, assembled[1])
+    elif execute_match:
+        executed = assembler.execute(execute_match.group(1))
+        privmsg(nick, chan, executed)
     elif to_me_match or chan == config.nick:
         if to_me_match: msg = to_me_match.group(1)
         onMsgToMe(nick, chan, msg)
