@@ -18,15 +18,12 @@ def send(msg):
     server.send(msg + "\r\n")
 
 def privmsg(nick, chan, msg):
-    parent.last_nick = nick
-    parent.last_chan = chan
 
     lines = msg.split("\n")
-    if(len(lines) > 1):
+    if len(lines) > 1:
         for line in lines:
-           if line != "":
-             privmsg(nick, chan, line)
-    else:
+            privmsg(nick, chan, line)
+    elif msg != "":
         response = "PRIVMSG "
 
         if chan == config.nick:
@@ -49,6 +46,8 @@ execute_re = re.compile(">>(.+)")
 assemble_re = re.compile(">>>(.+)")
 
 def onPrivMsg(nick, chan, msg):
+    parent.last_nick = nick
+    parent.last_chan = chan
     print "Message from " + nick + " to " + chan + ": " + msg
     to_me_match = re.match("^" + config.nick + "[^ ]? (.+)", msg)
     assemble_match = assemble_re.match(msg)
