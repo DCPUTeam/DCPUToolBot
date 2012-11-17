@@ -1,16 +1,16 @@
 import re
-import assembler
+import dcpu
 
 def init(serv, conf, par):
     print "IRC is initializing..."
     global server
     global config
     global parent
-    global assembler
+    global dcpu
     server = serv
     config = conf
     parent = par
-    assembler = reload(assembler)
+    dcpu = reload(dcpu)
 
 
 def send(msg):
@@ -54,13 +54,13 @@ def onPrivMsg(nick, chan, msg):
     execute_match = execute_re.match(msg)
 
     if assemble_match:
-        assembled = assembler.assemble(assemble_match.group(1))
+        assembled = dcpu.assemble(assemble_match.group(1))
 	if assembled[0] != "":
 	    privmsg(nick, chan, ', '.join(assembled[0]))
 	if assembled[1] != "":
             privmsg(nick, chan, assembled[1])
     elif execute_match:
-        executed = assembler.execute(execute_match.group(1))
+        executed = dcpu.execute(execute_match.group(1))
         privmsg(nick, chan, executed)
     elif to_me_match or chan == config.nick:
         if to_me_match: msg = to_me_match.group(1)
