@@ -108,7 +108,7 @@ def execute(code):
 
     err_lines = err.split("\n")
 
-    for i in range(11):
+    for i in range(10):
         err_lines.pop()
 
     errors = "\n".join(err_lines)
