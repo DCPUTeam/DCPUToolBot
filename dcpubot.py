@@ -20,8 +20,12 @@ def onAssemble(nick, user, host, chan, matches):
 irc.onPrivmsg(">>>(.+)", onAssemble)
 
 def onExecute(nick, user, host, chan, matches):
-    executed = dcpu.execute(matches.group(1))
-    irc.privmsg(nick, chan, executed)
+    executed, errors = dcpu.execute(matches.group(1))
+
+    if executed:
+        irc.privmsg(nick, chan, executed)
+    if errors:
+        irc.privmsg(nick, chan, errors)
 
 irc.onPrivmsg(">>([^>].+)", onExecute)
 

@@ -118,4 +118,4 @@ def execute(code):
     registers = ', '.join(changed_registers)
     ms = final * 1000
     response = "[" + str(num_words) + " words][" + registers + "][%dms]" % round(ms)
-    return response
+    return (response, err)
