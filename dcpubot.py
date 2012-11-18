@@ -20,6 +20,7 @@ def onAssemble(nick, user, host, chan, matches):
 irc.onPrivmsg(">>>(.+)", onAssemble)
 
 def onExecute(nick, user, host, chan, matches):
+    irc.privmsg(nick, chan, "Emulator support is not yet working. (For Toolchain devs: It won't work until the emulator can run headless)\nTry >>> to assemble")
     executed = dcpu.execute(matches.group(1))
     irc.privmsg(nick, chan, executed)
 
