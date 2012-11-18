@@ -106,6 +106,13 @@ def execute(code):
 
     err = proc.stderr.read()
 
+    err_lines = err.split("\n")
+
+    for i in range(10):
+        err_lines.pop()
+
+    errors = "\n".join(err_lines)
+
     os.remove(filename)
 
     register_matches = register_re.findall(err)
@@ -118,4 +125,4 @@ def execute(code):
     registers = ', '.join(changed_registers)
     ms = final * 1000
     response = "[" + str(num_words) + " words][" + registers + "][%dms]" % round(ms)
-    return (response, err)
+    return (response, errors)
