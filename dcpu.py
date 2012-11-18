@@ -97,7 +97,7 @@ def execute(code):
     file.close()
 
     start = time.time()
-    proc = subprocess.Popen(['dtemu', '-t', filename], stderr=subprocess.PIPE)
+    proc = subprocess.Popen(['dtemu', '-t', '-h', filename], stderr=subprocess.PIPE)
     t = threading.Timer(5, timeout, [proc])
     while proc.poll() == None:
         if time.time() - start > 5:
