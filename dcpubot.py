@@ -1,58 +1,33 @@
 #!/usr/bin/env python
-import socket
-import config
 import irc
-import sys
-import subprocess
+import config
+import dcpu
 
-server = socket.create_connection((config.host, config.port))
+irc.connect(config.host, config.port, config.nick, config.password)
+irc.join(config.chan)
 
-server.sendall("PASS " + config.password + "\r\n")
-server.sendall("NICK " + config.nick + "\r\n")
-server.sendall("USER dcpubot 0 * :DCPU Bot\r\n")
+def onAssemble(nick, user, host, chan, matches):
+    binary, errors = dcpu.assemble(matches[1])
 
-for chan in config.chan:
-    server.sendall("JOIN " + chan + "\r\n")
+    if binary:
+        irc.privmsg(nick, chan, ', '.join(binary))
+    if errors:
+        irc.privmsg(nick, chan, errors)
 
-def irc_load():
-    print "Reloading IRC module"
-    global irc
-    irc = reload(irc)
-    irc.init(server, config, sys.modules[__name__])
+irc.onPrivmsg(">>>(.+)", onAssemble)
 
-irc_load()
-print "Done loading."
+def onExecute(nick, user, host, chan, matches):
+    executed = dcpu.execute(matches[1])
+    irc.privmsg(nick, chan, executed)
 
-reload_now = False
-last_nick = ""
-last_chan = ""
+irc.onPrivmsg(">>(.+)", onExecute)
 
-def gitupdate():
-    irc.privmsg(last_nick, last_chan, "Pulling latest changes from GitHub")
-    proc = subprocess.Popen(['git', 'pull'], stdout=subprocess.PIPE)
-    code = proc.wait()
-    if code == 0:
-        proc_msg = proc.stdout.read()
-        if "Already up-to-date." in proc_msg:
-            return False
-        return True
+def onHello(nick, user, host, chan, matches):
+    irc.privmsg(nick, chan, "Howdy!")
 
-while 1:
-    try:
-        message = server.recv(4096)
-        if message == '':
-            server.close()
-            break
+irc.onMsgToMe(".*hello.*", onHello)
 
-        irc.onData(message)
-    except Exception as e:
-      irc.privmsg(last_nick, last_chan, "Now look at that. An error just happened. How cute. Error: " + e.message)
-    if reload_now:
-       irc.privmsg(last_nick, last_chan, "Pulling latest changes from GitHub")
-       if gitupdate():
-           irc.privmsg(last_nick, last_chan, "Repository updated")
-       else:
-           irc.privmsg(last_nick, last_chan, "Already up to date")
-       irc_load()
-       irc.privmsg(last_nick, last_chan, "Reloading finished")
-       reload_now = False
+def onSup(nick, user, host, chan, matches):
+    irc.privmsg(nick, chan, "I'm fine. How about you?")
+
+irc.onMsgToMe(".*(how.*you|sup|what.*up).*", onSup)

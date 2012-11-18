@@ -1,82 +1,123 @@
+import socket
 import re
-import dcpu
+import threading
 
-def init(serv, conf, par):
-    print "IRC is initializing..."
-    global server
-    global config
-    global parent
-    global dcpu
-    server = serv
-    config = conf
-    parent = par
-    dcpu = reload(dcpu)
+command_handlers = []
+privmsg_handlers = []
+msgtome_handlers = []
 
-
-def send(msg):
+def command(command, params):
+    print "Command: (\"" + command + "\", \"" + params + ")"
+    msg = command + " " + params
     print msg
-    server.send(msg + "\r\n")
+    server.sendall(msg + "\r\n")
 
-def privmsg(nick, chan, msg):
+def privmsg(nickIn, chan, msg):
 
     lines = msg.split("\n")
     if len(lines) > 1:
         for line in lines:
-            privmsg(nick, chan, line)
+            privmsg(nickIn, chan, line)
     elif msg != "":
-        response = "PRIVMSG "
+        response = ""
 
-        if chan == config.nick:
-            response += nick + " :" + msg
+        if chan == nick:
+            response += nickIn + " :" + msg
         else:
-            response += chan + " :" + nick + ": " + msg
+            response += chan + " :" + nickIn + ": " + msg
 
-        send(response)
+        command("PRIVMSG", response)
 
-def onMsgToMe(nick, chan, msg):
-    if re.match("reload.*", msg):
-        privmsg(nick, chan, "Reloading in progress")
-	parent.reload_now = True
-    if re.match("hello.*", msg):
-        privmsg(nick, chan, "Howdy!")
-    if re.match("(how.*you|sup|what*up)", msg, re.IGNORECASE):
-        privmsg(nick, chan, "I'm fine. How about you?")
+def handlePing(nick, user, host, chan, params):
+    command('PONG', params)
 
-execute_re = re.compile(">>(.+)")
-assemble_re = re.compile(">>>(.+)")
+def handleMsgToMe(nick, user, host, chan, params):
+    for regex, callback in msgtome_handlers:
+        matches = regex.match(params)
+        if matches:
+            callback(nick, user, host, chan, params)
 
-def onPrivMsg(nick, chan, msg):
-    parent.last_nick = nick
-    parent.last_chan = chan
-    print "Message from " + nick + " to " + chan + ": " + msg
-    to_me_match = re.match("^" + config.nick + "[^ ]? (.+)", msg)
-    assemble_match = assemble_re.match(msg)
-    execute_match = execute_re.match(msg)
+def handlePrivmsg(nickIn, user, host, chan, params):
+    for regex, callback in privmsg_handlers:
+        matches = regex.match(params)
+        if matches:
+            callback(nickIn, user, host, chan, matches)
+            
+    global nick
+    matches = re.match("^" + nick + "[:, ]?(.*)", params)
+    if matches:
+        handleMsgToMe(nick, user, host, chan, matches.group(1))
 
-    if assemble_match:
-        assembled = dcpu.assemble(assemble_match.group(1))
-	if assembled[0] != "":
-	    privmsg(nick, chan, ', '.join(assembled[0]))
-	if assembled[1] != "":
-            privmsg(nick, chan, assembled[1])
-    elif execute_match:
-        executed = dcpu.execute(execute_match.group(1))
-        privmsg(nick, chan, executed)
-    elif to_me_match or chan == config.nick:
-        if to_me_match: msg = to_me_match.group(1)
-        onMsgToMe(nick, chan, msg)
+class EventHandler(threading.Thread):
+    def run(self):
+        while True:
+#            try:
+                message = server.recv(4096)
+                if message == '':
+                    server.close()
 
-ping_re = re.compile("^PING :(.*)")
-privmsg_re = re.compile("^:([^!@]+).+PRIVMSG ([^ ]+) :(.*)")
+                handleCommand(message)
+#            except Exception as e:
+#               print e.message
 
-def onData(data):
-    print(data)
+def connect(host, port, nickIn="TestBot", password="", name="dcpubot", realname="DCPU Bot"):
+    global nick
+    nick = nickIn
+    
+    global server
+    server = socket.create_connection((host, port))
 
-    ping_match = ping_re.match(data)
-    privmsg_match = privmsg_re.match(data)
+    server.sendall("PASS " + password + "\r\n")
+    server.sendall("NICK " + nick + "\r\n")
+    server.sendall("USER " + name + " 0 * :" + realname + "\r\n")
 
-    if ping_match:
-        response = "PONG :" + ping_match.group(1)
-        send(response)
-    elif privmsg_match:
-        onPrivMsg(privmsg_match.group(1), privmsg_match.group(2), privmsg_match.group(3))
+    onCommand('PING', handlePing)
+    onCommand('PRIVMSG', handlePrivmsg)
+
+    eventHandler = EventHandler()
+    eventHandler.start()
+
+def join(channels):
+    print channels
+    if type(channels) is str:
+        print "JOIN " + channels
+        server.sendall("JOIN " + channels + "\r\n")
+    else:
+        for channel in channels:
+            print "JOIN " + channel
+            server.sendall("JOIN " + channel + "\r\n")
+
+message_re = re.compile("^(:([^!@ ]+)(!([^@ ]+))?(@([^ ]+))? ?)?([^ ]+)? ?([^ ]+)[^:](:(.*))?")
+
+def handleCommand(message):
+    print "Message: " + message
+    message_data = message_re.match(message)
+
+    if message_data:
+    
+        nick = message_data.group(2)
+        user = message_data.group(4)
+        host = message_data.group(6)
+        command = message_data.group(7)
+        chan = message_data.group(8)
+        params = message_data.group(10)
+    
+        for com, callback in command_handlers:
+            if com == command:
+                callback(nick, user, host, chan, params)
+    else:
+        print "Message could not be parsed: " + message
+
+def onCommand(command, callback):
+    global command_handlers
+    command_handlers.append((command, callback))
+
+def onPrivmsg(reg, callback):
+    global privmsg_handlers
+    regex = re.compile(reg)
+    privmsg_handlers.append((regex, callback))
+
+def onMsgToMe(reg, callback):
+    global msgtome_handlers
+    regex = re.compile(reg)
+    msgtome_handlers.append((regex, callback))

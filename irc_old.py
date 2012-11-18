@@ -1,24 +1,37 @@
-import irc
+import re
 import dcpu
 
-def onPing(nick, user, host, chan, data):
-    irc.command('PONG', data)
+def init(serv, conf, par):
+    print "IRC is initializing..."
+    global server
+    global config
+    global parent
+    global dcpu
+    server = serv
+    config = conf
+    parent = par
+    dcpu = reload(dcpu)
 
-irc.on('PING', onPing)
 
-def onAssemble(nick, user, host, chan, matches):
-    binary, errors = dcpu.assemble(matches[1])
+def send(msg):
+    print msg
+    server.send(msg + "\r\n")
 
-    if binary:
-        irc.privmsg(nick, chan, ', '.join(binary)
-    if errors:
-        irc.privmsg(nick, chan, errors)
+def privmsg(nick, chan, msg):
 
-irc.onMatch(">>>(.+)", onAssemble)
+    lines = msg.split("\n")
+    if len(lines) > 1:
+        for line in lines:
+            privmsg(nick, chan, line)
+    elif msg != "":
+        response = "PRIVMSG "
 
-def onExecute(nick, user, host, chan, matches):
-    executed = dcpu.execute(matches[1])
-    privmsg(nick, chan, executed)
+        if chan == config.nick:
+            response += nick + " :" + msg
+        else:
+            response += chan + " :" + nick + ": " + msg
+
+        send(response)
 
 def onMsgToMe(nick, chan, msg):
     if re.match("reload.*", msg):
@@ -52,3 +65,18 @@ def onPrivMsg(nick, chan, msg):
     elif to_me_match or chan == config.nick:
         if to_me_match: msg = to_me_match.group(1)
         onMsgToMe(nick, chan, msg)
+
+ping_re = re.compile("^PING :(.*)")
+privmsg_re = re.compile("^:([^!@]+).+PRIVMSG ([^ ]+) :(.*)")
+
+def onData(data):
+    print(data)
+
+    ping_match = ping_re.match(data)
+    privmsg_match = privmsg_re.match(data)
+
+    if ping_match:
+        response = "PONG :" + ping_match.group(1)
+        send(response)
+    elif privmsg_match:
+        onPrivMsg(privmsg_match.group(1), privmsg_match.group(2), privmsg_match.group(3))
