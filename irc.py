@@ -29,6 +29,7 @@ def privmsg(nickIn, chan, msg):
         command("PRIVMSG", response)
 
 def handlePing(nick, user, host, chan, params):
+    print params
     command('PONG', params)
 
 def handleMsgToMe(nick, user, host, chan, params):
@@ -87,7 +88,7 @@ def join(channels):
             print "JOIN " + channel
             server.sendall("JOIN " + channel + "\r\n")
 
-message_re = re.compile("^(:([^!@ ]+)(!([^@ ]+))?(@([^ ]+))? ?)?([^ ]+)? ?([^ ]+)[^:](:(.*))?")
+message_re = re.compile("^((:([^!@ ]+)(!([^@ ]+))?(@([^ ]+))? ?)?([^ ]+)?)? ?((?!:)[^ ]*)[^:]*(:(.*))?")
 
 def handleCommand(message):
     print "Message: " + message
@@ -95,12 +96,12 @@ def handleCommand(message):
 
     if message_data:
     
-        nick = message_data.group(2)
-        user = message_data.group(4)
-        host = message_data.group(6)
-        command = message_data.group(7)
-        chan = message_data.group(8)
-        params = message_data.group(10)
+        nick = message_data.group(3)
+        user = message_data.group(5)
+        host = message_data.group(7)
+        command = message_data.group(8)
+        chan = message_data.group(9)
+        params = message_data.group(11)
     
         for com, callback in command_handlers:
             if com == command:
