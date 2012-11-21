@@ -89,6 +89,8 @@ null_re = re.compile("<null>")
 def disassemble(binary_str):
     byte_strings = binary_str.split(",")
 
+    print byte_strings
+
     fd, filename = tempfile.mkstemp()
     file = os.fdopen(fd, 'wb')
     
@@ -104,8 +106,12 @@ def disassemble(binary_str):
     file.close()
 
     length = hex(len(byte_strings))
+    print length
 
-    proc = subprocess.Popen(['dtdb', '-c', '"disasm 0x0 ' + length + '"', filename], stderr=subprocess.PIPE)
+    args = 'dtdb -c "disasm 0x0 ' + length + '" ' + filename
+    print args
+
+    proc = subprocess.Popen(args, stderr=subprocess.PIPE)
     proc.wait()
 
     res = proc.stderr.read()
