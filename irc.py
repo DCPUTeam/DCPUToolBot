@@ -52,14 +52,14 @@ def handlePrivmsg(nickIn, user, host, chan, params):
 class EventHandler(threading.Thread):
     def run(self):
         while True:
-       #     try:
+            try:
                 message = server.recv(4096)
                 if message == '':
                     server.close()
 
                 handleCommand(message)
-         #   except Exception as e:
-           #    print e.message
+            except Exception as e:
+               print e.message
 
 def connect(host, port, nickIn="TestBot", password="", name="dcpubot", realname="DCPU Bot"):
     global nick
