@@ -103,7 +103,9 @@ def disassemble(binary_str):
 
     file.close()
 
-    proc = subprocess.Popen(['dtdb', '-c', 'disasm', filename], stderr=subprocess.PIPE)
+    length = hex(len(byte_strings))
+
+    proc = subprocess.Popen(['dtdb', '-c', '"disasm 0x0 ' + length + '"', filename], stderr=subprocess.PIPE)
     proc.wait()
 
     res = proc.stderr.read()
