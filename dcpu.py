@@ -87,7 +87,7 @@ register_re = re.compile(r"([A-Z]{1,2}):\s*0x([\dA-F]+)")
 def execute(code):
     binary, err = assemble_binary(code)
     if err and not ("warning" in err):
-        return err
+        return ("", err)
 
     num_words = len(binary) / 2
 
