@@ -40,6 +40,11 @@ def onExecute(nick, user, host, chan, matches):
 
 irc.onPrivmsg(">>([^>].+)", onExecute)
 
+def onRudeness(nick, user, host, chan, matches):
+    irc.privmsg(nick, chan, "Why don't you?")
+
+irc.onMsgToMe(".*stfu.*", onRudeness)
+
 def onHello(nick, user, host, chan, matches):
     irc.privmsg(nick, chan, "Howdy!")
 
