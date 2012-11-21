@@ -110,11 +110,13 @@ def disassemble(binary_str):
 
     matches = disasm_re.findall(res)
 
-    response = ""
+    res = []
 
     for match in matches:
         if not null_re.match(match[1]):
-            response += match[1] + "\n"
+            res.append(match[1].replace('\r', ''))
+
+    response = ' / '.join(res)
 
     os.remove(filename)
     return response
