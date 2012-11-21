@@ -19,6 +19,17 @@ def onAssemble(nick, user, host, chan, matches):
 
 irc.onPrivmsg(">>>(.+)", onAssemble)
 
+def onDisassemble(nick, user, host, chan, matches):
+    print "Disassembling"
+    print matches.group()
+    print matches.group(1)
+    code = dcpu.disassemble(matches.group(1))
+
+    if code:
+        irc.privmsg(nick, chan, code)
+
+irc.onPrivmsg("<<<(.+)", onDisassemble)
+
 def onExecute(nick, user, host, chan, matches):
     executed, errors = dcpu.execute(matches.group(1))
 

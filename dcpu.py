@@ -82,6 +82,43 @@ def timeout(p):
     if p.poll() == None:
         p.kill()
 
+hex_re = re.compile("^0x[0-9a-fA-F]+")
+disasm_re = re.compile("0x[0-9a-fA-F]{4} \(0x[0-9a-fA-F]{4}\): *(>>>)? *(.+)\r?\n?")
+null_re = re.compile("<null>")
+
+def disassemble(binary_str):
+    byte_strings = binary_str.split(",")
+
+    fd, filename = tempfile.mkstemp()
+    file = os.fdopen(fd, 'wb')
+    
+    for byte in byte_strings:
+        byte = byte.strip()
+        if hex_re.match(byte):
+            byte = int(byte, 16)
+        else:
+            byte = int(byte)
+        file.write(chr(byte >> 8))
+        file.write(chr(byte & 0xff))
+
+    file.close()
+
+    proc = subprocess.Popen(['dtdb', '-c', 'disasm', filename], stderr=subprocess.PIPE)
+    proc.wait()
+
+    res = proc.stderr.read()
+
+    matches = disasm_re.findall(res)
+
+    response = ""
+
+    for match in matches:
+        if not null_re.match(match[1]):
+            response += match[1] + "\n"
+
+    os.remove(filename)
+    return response
+
 register_re = re.compile(r"([A-Z]{1,2}):\s*0x([\dA-F]+)")
 
 def execute(code):
