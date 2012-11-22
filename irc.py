@@ -47,7 +47,7 @@ def handlePrivmsg(nickIn, user, host, chan, params):
     global nick
     matches = re.match("^" + nick + "[:, ]?(.*)", params)
     if matches:
-        handleMsgToMe(nick, user, host, chan, matches.group(1))
+        handleMsgToMe(nickIn, user, host, chan, matches.group(1))
 
 class EventHandler(threading.Thread):
     def run(self):

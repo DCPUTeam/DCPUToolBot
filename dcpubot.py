@@ -40,6 +40,44 @@ def onExecute(nick, user, host, chan, matches):
 
 irc.onPrivmsg(">>([^>].+)", onExecute)
 
+def onHex(nick, user, host, chan, matches):
+    converted = 0
+    
+    if matches.group(1) == "0b":
+        converted = hex(int(matches.group(2), 2))
+    else:
+        converted = hex(int(matches.group(2)))
+
+    irc.privmsg(nick, chan, converted)
+
+irc.onPrivmsg(r"^hex\((0b)?(\d+)\)", onHex)
+
+def onDec(nick, user, host, chan, matches):
+    converted = 0
+    
+    if matches.group(1) == "0b":
+        converted = str(int(matches.group(2), 2))
+    elif matches.group(1) == "0x":
+        converted = str(int(matches.group(2), 16))
+    else:
+        converted = str(int(matches.group(2)))
+
+    irc.privmsg(nick, chan, converted)
+
+irc.onPrivmsg(r"^dec\((0b|0x)?([0-9a-fA-F]+)\)", onDec)
+
+def onBin(nick, user, host, chan, matches):
+    converted = 0
+
+    if matches.group(1) == "0x":
+        converted = bin(int(matches.group(2), 16))
+    else:
+        converted = bin(int(matches.group(2), 16))
+
+    irc.privmsg(nick, chan, converted)
+
+irc.onPrivmsg(r"^bin\((0x)?([0-9a-fA-F]+)\)", onBin)
+
 def onRudeness(nick, user, host, chan, matches):
     irc.privmsg(nick, chan, "Why don't you?")
 
