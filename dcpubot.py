@@ -2,6 +2,7 @@
 import irc
 import config
 import dcpu
+import random
 
 irc.connect(config.host, config.port, config.nick, config.password)
 irc.join(config.chan)
@@ -77,6 +78,12 @@ def onBin(nick, user, host, chan, matches):
     irc.privmsg(nick, chan, converted)
 
 irc.onPrivmsg(r"^bin\((0x)?([0-9a-fA-F]+)\)", onBin)
+
+def onStinks(nick, user, host, chan, matches):
+    messages = ["So do you!!!", "Shut up.", "You smell even worse.", "You really shouldn't be talking."]
+    irc.privmsg(nick, chan, choice(messages)]
+
+irc.onPrivmsg(config.nick + r":?( ?is| you)? stink(ing|s)?", onStinks)
 
 def onRudeness(nick, user, host, chan, matches):
     irc.privmsg(nick, chan, "Why don't you?")
