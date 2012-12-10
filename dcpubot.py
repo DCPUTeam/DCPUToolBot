@@ -81,7 +81,7 @@ irc.onPrivmsg(r"^bin\((0x)?([0-9a-fA-F]+)\)", onBin)
 
 def onStinks(nick, user, host, chan, matches):
     messages = ["So do you!!!", "Shut up.", "You smell even worse.", "You really shouldn't be talking."]
-    irc.privmsg(nick, chan, choice(messages)]
+    irc.privmsg(nick, chan, choice(messages))
 
 irc.onPrivmsg(config.nick + r":?( ?is| you)? stink(ing|s)?", onStinks)
 
