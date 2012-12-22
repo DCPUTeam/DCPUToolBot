@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import irc
 import config
+import subprocess
 import dcpu
 import random
 
@@ -84,6 +85,18 @@ def onStinks(nick, user, host, chan, matches):
     irc.privmsg(nick, chan, choice(messages))
 
 irc.onPrivmsg(config.nick + r":?( ?is| you)? stink(ing|s)?", onStinks)
+
+def onReload(nick, user, host, chan, matches):
+    if(host == "unaffiliated/thatotherpersony"):
+        subprocess.call(["git", "pull", "origin", "master"]);
+        irc.privmsg(nick, chan, "Pulled latest changes from GitHub. Restarting.")
+        exit()
+    else if(host == "unaffiliated/quu"):
+        irc.privmsg(nick, chan, "Quu: wat. Quu. derp.\nQuu: Really?\nQuu:Initializing spambot mode. >:D")
+    else:
+        irc.privmsg(nick, chan, "No. I don't wanna!")
+
+irc.onMsgToMe("reload", onReload)
 
 def onRudeness(nick, user, host, chan, matches):
     irc.privmsg(nick, chan, "Why don't you?")
