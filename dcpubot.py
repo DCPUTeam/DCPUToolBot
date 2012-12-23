@@ -84,7 +84,7 @@ def onStinks(nick, user, host, chan, matches):
     messages = ["So do you!!!", "Shut up.", "You smell even worse.", "You really shouldn't be talking."]
     irc.privmsg(nick, chan, choice(messages))
 
-irc.onPrivmsg(config.nick + r":?( ?is| you)? stink(ing|s)?", onStinks)
+irc.onPrivmsg(".*" + config.nick + r":?( ?is| you)? stink(ing|s)?.*", onStinks)
 
 def onReload(nick, user, host, chan, matches):
     if(host == "unaffiliated/thatotherpersony"):
