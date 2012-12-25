@@ -89,10 +89,10 @@ irc.onPrivmsg(".*" + config.nick + r":?( ?is| you)? stink(ing|s)?.*", onStinks)
 def onReload(nick, user, host, chan, matches):
     if(host == "unaffiliated/thatotherpersony"):
         subprocess.call(["git", "pull", "origin", "master"]);
-        irc.privmsg(nick, chan, "Pulled latest changes from GitHub. Restarting.")
-        exit()
+        irc.privmsg(nick, chan, "Pulled latest changes from GitHub. Attempting to reload.")
+        irc.reload()
     elif(host == "unaffiliated/quu"):
-        irc.privmsg(nick, chan, "Quu: wat. Quu. derp.\nQuu: Really?\nQuu:Initializing spambot mode. >:D")
+        irc.privmsg(nick, chan, "wat. Quu. derp.\nReally?\nInitializing spambot mode. >:D")
     else:
         irc.privmsg(nick, chan, "No. I don't wanna!")
 
