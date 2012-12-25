@@ -98,6 +98,11 @@ def onReload(nick, user, host, chan, matches):
 
 irc.onMsgToMe(".*reload.*", onReload)
 
+def onTest(nick, user, host, chan, matches):
+    irc.privmsg(nick, chan, "lolololol wat derp. ping Quu! ping mrout! Why not!")
+
+irc.onMsgTome(".*test.*", onTest)
+
 def onRudeness(nick, user, host, chan, matches):
     irc.privmsg(nick, chan, "Why don't you?")
 
