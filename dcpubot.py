@@ -98,10 +98,12 @@ def onReload(nick, user, host, chan, matches):
 
 irc.onMsgToMe(".*reload.*", onReload)
 
-def onTest(nick, user, host, chan, matches):
-    irc.privmsg(nick, chan, "lolololol wat derp. ping Quu! ping mrout! Why not!")
+def onProxy(nick, user, host, chan, matches):
+    to_chan = matches.group(1)
+    msg = matches.group(2)
+    irc.privmsg("", to_chan, msg)
 
-irc.onMsgToMe(".*test.*", onTest)
+irc.onMsgToMe(".*proxy ([^ ]+) (.+)", onProxy)
 
 def onRudeness(nick, user, host, chan, matches):
     irc.privmsg(nick, chan, "Why don't you?")
