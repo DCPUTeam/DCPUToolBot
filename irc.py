@@ -1,5 +1,6 @@
 import socket
 import re
+import threading
 import sys
 
 command_handlers = []
@@ -12,11 +13,26 @@ def command(command, params):
     print msg
     server.sendall(msg + "\r\n")
 
+def reloadFunction(function):
+    old = sys.modules[handler.__module__]
+    new = reload(old)
+    function = getattr(new, function.__name__)
+    return function
+
 def reload():
-    global callback
-    module = reload(sys.modules[callback.__module__])
-    callback = getattr(module, callback.__name__)
-    handleEvents(callback)
+    for i, handler in enumerate(command_handlers):
+        command_handlers[i] = reloadFunction(handler)
+
+    for i, handler in enumerate(privmsg_handlers):
+        privmsg_handlers[i] = reloadFunction(handler)
+
+    for i, handler in enumerate(msgtome_handlers):
+        msgtome_handlers[i] = reloadFunction(handler)
+
+    new = reload(sys.modules[__name__])
+
+    for attr in dir(sys.modules[__name__]):
+        setattr(self, attr, getattr(new, attr))
 
 def privmsg(nickIn, chan, msg):
 
@@ -55,21 +71,19 @@ def handlePrivmsg(nickIn, user, host, chan, params):
     if matches:
         handleMsgToMe(nickIn, user, host, chan, matches.group(1))
 
-def handleEvents(call):
-    call()
-    global callback
-    callback = call
-    while True:
-        try:
-            message = server.recv(4096)
-            if message == '':
-                server.close()
+class EventHandler(threading.Thread):
+    def run(self):
+        while True:
+            try:
+                message = server.recv(4096)
+                if message == '':
+                    server.close()
 
-            handleCommand(message)
-        except Exception as e:
-           print e.message
+                handleCommand(message)
+            except Exception as e:
+               print e.message
 
-def connect(callback, host, port, nickIn="TestBot", password="", name="dcpubot", realname="DCPU Bot"):
+def connect(host, port, nickIn="TestBot", password="", name="dcpubot", realname="DCPU Bot"):
     global nick
     nick = nickIn
     
@@ -83,7 +97,8 @@ def connect(callback, host, port, nickIn="TestBot", password="", name="dcpubot",
     onCommand('PING', handlePing)
     onCommand('PRIVMSG', handlePrivmsg)
 
-    handleEvents(callback)
+    eventHandler = EventHandler()
+    eventHandler.start()
 
 def join(channels):
     print channels
