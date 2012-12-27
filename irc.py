@@ -13,27 +13,6 @@ def command(command, params):
     print msg
     server.sendall(msg + "\r\n")
 
-def reloadFunction(function):
-    old = sys.modules[handler.__module__]
-    new = reload(old)
-    function = getattr(new, function.__name__)
-    return function
-
-def reload():
-    for i, handler in enumerate(command_handlers):
-        command_handlers[i] = reloadFunction(handler)
-
-    for i, handler in enumerate(privmsg_handlers):
-        privmsg_handlers[i] = reloadFunction(handler)
-
-    for i, handler in enumerate(msgtome_handlers):
-        msgtome_handlers[i] = reloadFunction(handler)
-
-    new = reload(sys.modules[__name__])
-
-    for attr in dir(sys.modules[__name__]):
-        setattr(self, attr, getattr(new, attr))
-
 def privmsg(nickIn, chan, msg):
 
     lines = msg.split("\n")
