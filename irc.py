@@ -50,6 +50,9 @@ def handlePrivmsg(nickIn, user, host, chan, params):
     if matches:
         handleMsgToMe(nickIn, user, host, chan, matches.group(1))
 
+    if chan == nick:
+        handleMsgToMe(nickIn, user, host, chan, params)
+
 class EventHandler(threading.Thread):
     def run(self):
         while True:

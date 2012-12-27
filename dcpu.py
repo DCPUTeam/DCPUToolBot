@@ -34,7 +34,7 @@ def link(files):
 split_lines_re = re.compile(r"""((?:[^\/"']|"[^"]*"|'[^']*')+)""")
 
 def assemble_file(code, binary=False):
-    code = '\n'.join(re.split(split_lines_re, code))
+    code = '\n'.join(split_lines_re.split(code))
     code = '\n'.join(code.split('\\'))
 
     process_flags = ["dtasm", "-o", "-", "-"]
